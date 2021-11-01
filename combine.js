@@ -2,7 +2,7 @@ import fetch from "node-fetch";
 
 let modules = [];
 
-export const addModule = async (url, module) => {
+export const genModule = async (url, module) => {
   let infoUrl = new URL(url);
   infoUrl.pathname += "info";
   let result = await Fetch(infoUrl.href, { module: module ? module : " " });
