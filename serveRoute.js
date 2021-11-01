@@ -1,11 +1,12 @@
 import { Router } from "express";
+import process from "process";
 
 let modules = [];
 
 export const router = Router();
 
 export const addModule = async (moduleImport) => {
-  const module = await import(moduleImport);
+  const module = await import("file://" + process.cwd() + "/" + moduleImport);
   modules.push({
     name: moduleImport.replace(/^.*[\\\/]/, "").split(".js")[0],
     module,
