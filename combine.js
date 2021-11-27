@@ -1,4 +1,9 @@
-import fetch from "node-fetch";
+let f;
+try {
+  f = fetch;
+} catch (e) {
+  f = (await import("node-fetch")).default;
+}
 
 let modules = [];
 
@@ -54,7 +59,7 @@ export const genModule = async (url, module) => {
 
 const Fetch = async (url, json = {}, headers = {}, options = {}) => {
   return await (
-    await fetch(url, {
+    await f(url, {
       ...{
         method: "POST",
         headers: {
