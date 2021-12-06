@@ -71,3 +71,5 @@ router.post("/info", (req, res) => {
   res.status(200).send({ success: true, info });
   return;
 });
+
+router.get("/combine.js", (req, res) => res.status(200).sendFile("combine.js"));
