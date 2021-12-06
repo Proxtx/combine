@@ -1,8 +1,7 @@
 {
-  "name": "f_combine",
+  "name": "@proxtx/combine",
   "version": "1.0.0",
   "type": "module",
-  "description": "",
   "main": "main.js",
   "scripts": {
     "test": "nodemon ."
@@ -12,5 +11,14 @@
   "dependencies": {
     "express": "^4.17.1",
     "node-fetch": "^3.0.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Proxtx/f_combine.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Proxtx/f_combine/issues"
+  },
+  "homepage": "https://github.com/Proxtx/f_combine#readme",
+  "description": ""
 }
