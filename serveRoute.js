@@ -5,10 +5,10 @@ let modules = [];
 
 export const router = Router();
 
-export const addModule = async (moduleImport) => {
+export const addModule = async (moduleImport, name) => {
   const module = await import("file://" + process.cwd() + "/" + moduleImport);
   modules.push({
-    name: moduleImport.replace(/^.*[\\\/]/, "").split(".js")[0],
+    name: name ? name : moduleImport.replace(/^.*[\\\/]/, "").split(".js")[0],
     module,
   });
 };
