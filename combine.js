@@ -7,6 +7,12 @@ try {
 
 let modules = [];
 
+/**
+ * Generates a proxy object which represents the server.
+ * @param {String} url The Url of the combine api
+ * @param {String} module The module name. Optional if you only have one module
+ * @returns A proxy objects which acts like "import * as allExports from server"
+ */
 export const genModule = async (url, module) => {
   let infoUrl = new URL(url);
   infoUrl.pathname += "info";

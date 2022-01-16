@@ -5,6 +5,11 @@ let modules = [];
 
 export const router = Router();
 
+/**
+ * Add a Module to the Combine Server
+ * @param {String} moduleImport Location of the Module File
+ * @param {String} name A custom name for the module. Optional
+ */
 export const addModule = async (moduleImport, name) => {
   const module = await import("file://" + process.cwd() + "/" + moduleImport);
   modules.push({
