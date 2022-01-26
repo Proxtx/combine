@@ -1,60 +1,42 @@
-let f;
-try {
-  f = fetch;
-} catch (e) {
-  f = (await import("node-fetch")).default;
-}
-
-let modules = [];
+let asyncFunctionConstructor = (async () => {}).constructor;
 
 /**
  * Generates a proxy object which represents the server.
- * @param {String} url The Url of the combine api
+ * @param {Function} request The function that handles the request
  * @param {String} module The module name. Optional if you only have one module
  * @returns A proxy objects which acts like "import * as allExports from server"
  */
-export const genModule = async (url, module) => {
-  let infoUrl = new URL(url);
-  infoUrl.pathname += "info";
-  let result = await Fetch(infoUrl.href, { module: module ? module : " " });
-  if (!result.success) {
-    return result;
-  }
-  let dataUrl = new URL(url);
-  dataUrl.pathname += "data";
-  const moduleIndex = modules.length;
-  modules.push({ url: dataUrl.href, module, export: result.info });
-
+export const genModule = async (request, module) => {
+  let functions = (await request({ info: true, module })).functions;
   return new Proxy(
     {},
     {
       get: (target, p) => {
-        let module = modules[moduleIndex];
-        let index = 0;
-        let found = false;
-        for (let i in module.export) {
-          if (module.export[i].export == p) {
-            index = i;
-            found = true;
-          }
-        }
-        if (!found) return false;
-        if (module.export[index].function) {
-          return async function (...args) {
-            return (
-              await Fetch(module.url, {
-                export: p,
-                arguments: args,
-                module: module.module,
-              })
-            ).data;
+        let body;
+        if (functions[p]) {
+          body = {
+            export: p,
+            module: module,
+          };
+          if (request instanceof asyncFunctionConstructor)
+            return async function (...args) {
+              body.arguments = args;
+              return parseRes(await request(body));
+            };
+          return function (...args) {
+            body.arguments = args;
+            return parseRes(request(body));
           };
         }
-        return Fetch(module.url, { export: p, module: module.module }).then(
-          (result) => {
-            return result.data;
-          }
-        );
+        body = {
+          export: p,
+          module: module,
+        };
+        if (request instanceof asyncFunctionConstructor)
+          return request(body).then((res) => {
+            return parseRes(res);
+          });
+        return parseRes(request(body));
       },
       set: () => {
         return false;
@@ -63,20 +45,9 @@ export const genModule = async (url, module) => {
   );
 };
 
-const Fetch = async (url, json = {}, headers = {}, options = {}) => {
-  return await (
-    await f(url, {
-      ...{
-        method: "POST",
-        headers: {
-          ...{
-            "Content-Type": "application/json",
-          },
-          ...headers,
-        },
-        body: JSON.stringify(json),
-      },
-      ...options,
-    })
-  ).json();
+const parseRes = (res) => {
+  if (res.success) {
+    return res.data;
+  }
+  return res;
 };

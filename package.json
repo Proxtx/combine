@@ -1,17 +1,14 @@
 {
   "name": "@proxtx/combine",
-  "version": "1.0.4",
+  "version": "2.0.0",
   "type": "module",
-  "main": "main.js",
+  "main": "server.js",
   "scripts": {
     "test": "nodemon ."
   },
-  "author": "",
+  "author": "Proxtx",
   "license": "ISC",
-  "dependencies": {
-    "express": "^4.17.1",
-    "node-fetch": "^3.0.0"
-  },
+  "dependencies": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Proxtx/f_combine.git"
