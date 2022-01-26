@@ -38,7 +38,7 @@ export const data = async (req) => {
   const find = findModule(req.module);
   if (!find.success) return find;
   let module = find.module.module;
-  if (!req.export || !module[req.export]) {
+  if (!req.export || module[req.export] === undefined) {
     return { success: false, errorText: "Export not found!" };
   }
   if (module[req.export] instanceof Function) {
