@@ -41,16 +41,21 @@ export const data = async (req) => {
   if (!req.export || module[req.export] === undefined) {
     return { success: false, errorText: "Export not found!" };
   }
-  if (module[req.export] instanceof Function) {
-    let data = req.arguments
-      ? await module[req.export](...req.arguments)
-      : await module[req.export]();
-    return {
-      success: true,
-      data,
-    };
+  try {
+    if (module[req.export] instanceof Function) {
+      let data = req.arguments
+        ? await module[req.export](...req.arguments)
+        : await module[req.export]();
+      return {
+        success: true,
+        data,
+      };
+    }
+    return { success: true, data: module[req.export] };
+  } catch (e) {
+    console.log("A combine export has thrown an error:\n", e);
+    return { success: false, errorText: "Internal Error" };
   }
-  return { success: true, data: module[req.export] };
 };
 
 const info = (req) => {
