@@ -34,7 +34,8 @@ const findModule = (moduleImport) => {
  * @returns {Object} A result that can be parsed by the client
  */
 export const data = async (req) => {
-  if (req.info) return info(req);
+  if (req.info && req.module) return info(req);
+  if (req.info) return moduleInfo(req);
   const find = findModule(req.module);
   if (!find.success) return find;
   let module = find.module.module;
@@ -68,5 +69,22 @@ const info = (req) => {
       functions[i] = true;
     }
   }
-  return { success: true, functions };
+  let exports = {};
+  for (let i of Object.keys(module)) {
+    if (module[i] instanceof Function) {
+      exports[i] = { function: true };
+    } else {
+      exports[i] = { function: false };
+    }
+  }
+
+  return { success: true, functions, exports };
+};
+
+const moduleInfo = (req) => {
+  let moduleResponse = [];
+  modules.forEach((value) => {
+    moduleResponse.push({ name: value.name });
+  });
+  return { success: true, modules: moduleResponse };
 };
