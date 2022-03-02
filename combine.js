@@ -12,6 +12,7 @@ export const genModule = async (request, module) => {
     {},
     {
       get: (target, p) => {
+        if (!functions) return;
         let body;
         if (functions[p]) {
           body = {
