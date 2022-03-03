@@ -7,14 +7,19 @@ let asyncFunctionConstructor = (async () => {}).constructor;
  * @returns A proxy objects which acts like "import * as allExports from server"
  */
 export const genModule = async (request, module) => {
-  let functions = (await request({ info: true, module })).functions;
+  let info = await request({ info: true, module });
+  let exports = info.exports;
+  if (!info.success)
+    throw new Error(
+      "Combine error. Server info was unsuccessful: " + JSON.stringify(info)
+    );
   return new Proxy(
     {},
     {
       get: (target, p) => {
-        if (!functions) return;
+        if (!info || !exports[p]) return;
         let body;
-        if (functions[p]) {
+        if (exports[p].function) {
           body = {
             export: p,
             module: module,

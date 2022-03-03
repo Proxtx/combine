@@ -1,90 +1,96 @@
-let modules = [];
-
 /**
- * Add a Module to the Combine Server
- * @param {Object} module An Object with Functions and Attributes
- * @param {String} name A custom name for the module.
+ * The Server side combine class
+ * This modules also contains an instance of this class with its main exports (add module & data)
  */
-export const addModule = async (module, name) => {
-  modules.push({
-    name: name,
-    module,
-  });
-};
+export class Combine {
+  modules = {};
 
-const findModule = (moduleImport) => {
-  if (modules.length < 1) {
-    return { success: false, errorText: "Module not found!" };
-  }
-  let module;
-  if (moduleImport && modules.length > 1) {
-    for (let i in modules)
-      if (modules[i].name == moduleImport) module = modules[i];
-  }
-  if (!module) {
-    module = modules[0];
-  }
+  /**
+   * Add a Module to the Combine Server
+   * @param {Object} module An Object with Functions and Attributes
+   * @param {String} name A custom name for the module.
+   */
+  addModule = async (module, name) => {
+    if (typeof module == "string") module = await import(module);
+    this.modules[name] = {
+      name: name,
+      module,
+    };
+  };
 
-  return { success: true, module };
-};
-
-/**
- * The main function combine interacts with
- * @param {Object} req The content of the request made by combine
- * @returns {Object} A result that can be parsed by the client
- */
-export const data = async (req) => {
-  if (req.info && req.module) return info(req);
-  if (req.info) return moduleInfo(req);
-  const find = findModule(req.module);
-  if (!find.success) return find;
-  let module = find.module.module;
-  if (!req.export || module[req.export] === undefined) {
-    return { success: false, errorText: "Export not found!" };
-  }
-  try {
-    if (module[req.export] instanceof Function) {
-      let data = req.arguments
-        ? await module[req.export](...req.arguments)
-        : await module[req.export]();
-      return {
-        success: true,
-        data,
-      };
+  /**
+   * The main function combine interacts with
+   * @param {Object} req The content of the request made by combine
+   * @returns {Object} A result that can be parsed by the client
+   */
+  data = async (req) => {
+    if (req.info && req.module) return this.info(req);
+    if (req.info) return this.moduleInfo(req);
+    const find = this.modules[req.module];
+    if (!find) return { success: false, errorText: "Module not found." };
+    let module = find.module;
+    if (!req.export || module[req.export] === undefined) {
+      return { success: false, errorText: "Export not found!" };
     }
-    return { success: true, data: module[req.export] };
-  } catch (e) {
-    console.log("A combine export has thrown an error:\n", e);
-    return { success: false, errorText: "Internal Error" };
-  }
-};
-
-const info = (req) => {
-  const find = findModule(req.module);
-  if (!find.success) return find;
-  let module = find.module.module;
-  let functions = {};
-  for (let i of Object.keys(module)) {
-    if (module[i] instanceof Function) {
-      functions[i] = true;
+    try {
+      if (module[req.export] instanceof Function) {
+        let data = req.arguments
+          ? await module[req.export](...req.arguments)
+          : await module[req.export]();
+        return {
+          success: true,
+          data,
+        };
+      }
+      return { success: true, data: module[req.export] };
+    } catch (e) {
+      console.log("A combine export has thrown an error:\n", e);
+      return { success: false, errorText: "Internal Error" };
     }
-  }
-  let exports = {};
-  for (let i of Object.keys(module)) {
-    if (module[i] instanceof Function) {
-      exports[i] = { function: true };
-    } else {
-      exports[i] = { function: false };
+  };
+
+  /**
+   * Returns info about a module
+   * @param {Object} req Object requested by the client side
+   * @returns Info about a module
+   */
+  info = (req) => {
+    const find = this.modules[req.module];
+    if (!find) return { success: false, errorText: "Module not found." };
+    let module = find.module;
+    let functions = {};
+    for (let i of Object.keys(module)) {
+      if (module[i] instanceof Function) {
+        functions[i] = true;
+      }
     }
-  }
+    let exports = {};
+    for (let i of Object.keys(module)) {
+      if (module[i] instanceof Function) {
+        exports[i] = { function: true };
+      } else {
+        exports[i] = { function: false };
+      }
+    }
 
-  return { success: true, functions, exports };
-};
+    return { success: true, functions, exports };
+  };
 
-const moduleInfo = (req) => {
-  let moduleResponse = [];
-  modules.forEach((value) => {
-    moduleResponse.push({ name: value.name });
-  });
-  return { success: true, modules: moduleResponse };
-};
+  /**
+   * Returns all modules
+   * @param {Object} req Object requested by the client side
+   * @returns All modules
+   */
+  moduleInfo = (req) => {
+    let moduleResponse = [];
+    modules.forEach((value) => {
+      moduleResponse.push({ name: value.name });
+    });
+    return { success: true, modules: moduleResponse };
+  };
+}
+
+export const instance = new Combine();
+
+export const addModule = instance.addModule;
+export const data = instance.data;
