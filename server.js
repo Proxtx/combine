@@ -83,9 +83,9 @@ export class Combine {
    */
   moduleInfo = (req) => {
     let moduleResponse = [];
-    modules.forEach((value) => {
-      moduleResponse.push({ name: value.name });
-    });
+    for (let i of Object.keys(this.modules)) {
+      moduleResponse.push({ name: this.modules[i].name });
+    }
     return { success: true, modules: moduleResponse };
   };
 }
